@@ -2,16 +2,19 @@ package app
 
 import (
 	"fmt"
+	"os"
 	"plex-qbt-controller/plex"
 	"plex-qbt-controller/qbittorrent"
+	"sync"
 	"time"
 )
 
 type App struct {
 	QbittorrentClients []*qbittorrent.QBittorrentClient
 	Plex               *plex.PlexClient
-	Quit               chan bool
+	Quit               chan os.Signal
 	AppChan            chan bool
+	Wait               sync.WaitGroup
 }
 
 func (a *App) AddQBittorrentClient(q ...*qbittorrent.QBittorrentClient) {
@@ -23,6 +26,7 @@ func (a *App) SetPlexClient(p *plex.PlexClient) {
 }
 
 func (a *App) Run() {
+	a.Wait.Add(1)
 	if len(a.QbittorrentClients) == 0 {
 		panic("there are no qbittorrent clients")
 	}
@@ -33,33 +37,39 @@ func (a *App) Run() {
 	if a.Plex.WebhooksEnabled {
 
 	} else {
-		go a.RunPolling()
+		a.Wait.Add(1)
+		fmt.Println("no webhooks enabled. Using polling...")
+		go a.runPolling()
+
 	}
 }
 
-func (a *App) RunPolling() {
+func (a *App) runPolling() {
+	defer a.Wait.Done()
 	for {
 		select {
 		case <-a.AppChan:
 			fmt.Println("AppChan")
 		case <-a.Quit:
 			fmt.Println("Quit signal received... ")
+			a.Wait.Done()
 			return
-		case <-time.After(time.Second * 5):
+		case <-time.After(time.Second * 1):
 			fmt.Println("Polling...")
-			// for _, qbt := range a.QbittorrentClients {
-			// 	for _, libName := range qbt.PlexLibrariesToPause {
-			// 		plexStreams, err := a.Plex.GetLibrariesBeingStreamed()
-			// 		if err != nil {
-			// 			panic(err)
-			// 		}
-			// 		for _, ps := range plexStreams {
-			// 			if ps.Name == libName {
-			// 				qbt.PauseAllTorrents()
-			// 			}
-			// 		}
-			// 	}
-			// }
+			plexStreams, err := a.Plex.GetLibrariesBeingStreamed()
+			if err != nil {
+				panic(err)
+			}
+			for _, ps := range plexStreams {
+				for _, qbt := range a.QbittorrentClients {
+					for _, libName := range qbt.PlexLibrariesToPause {
+						if ps.Name == libName {
+							qbt.PauseAllTorrents()
+						}
+					}
+				}
+			}
+
 		}
 	}
 }

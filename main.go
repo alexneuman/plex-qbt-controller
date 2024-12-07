@@ -1,10 +1,15 @@
 package main
 
 import (
+	"fmt"
+	"os"
+	"os/signal"
 	"plex-qbt-controller/api"
 	"plex-qbt-controller/app"
 	"plex-qbt-controller/plex"
 	"plex-qbt-controller/qbittorrent"
+	"sync"
+	"syscall"
 )
 
 func main() {
@@ -29,7 +34,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	app := app.App{}
+	app := app.App{
+		Quit: make(chan os.Signal, 1),
+		Wait: sync.WaitGroup{},
+	}
 	handler := api.NewHandler(&app)
 	api.SetHandler(handler)
 
@@ -45,5 +53,10 @@ func main() {
 	// fmt.Println("bob")
 	// plex.GetAllLibraries()
 	app.Run()
+	// time.Sleep(time.Second * 10)
+	// appQuit <- true
+	signal.Notify(app.Quit, syscall.SIGINT, syscall.SIGTERM)
+	fmt.Println("Waiting until ctrl+c")
+	app.Wait.Wait()
 
 }
