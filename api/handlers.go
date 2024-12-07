@@ -41,10 +41,10 @@ func (h *Handler) PlexEvents(w http.ResponseWriter, r *http.Request) {
 						panic(err)
 					}
 					if len(streaming) <= 0 {
-						qbt.ResumeAllTorrents()
+						go qbt.ResumeAllTorrents()
 					}
 				case plex.RESUMED:
-					qbt.PauseAllTorrents()
+					go qbt.PauseAllTorrents()
 				default:
 					panic("Could not find event")
 				}

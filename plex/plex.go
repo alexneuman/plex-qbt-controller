@@ -9,16 +9,18 @@ import (
 )
 
 type PlexClientCreate struct {
-	Token string
-	Host  string
-	Port  string
+	Token           string
+	Host            string
+	Port            string
+	WebhooksEnabled bool
 }
 
 type PlexClient struct {
-	Token string
-	Host  string
-	Port  string
-	URL   string
+	Token           string
+	Host            string
+	Port            string
+	URL             string
+	WebhooksEnabled bool
 }
 
 type PlexRequest struct {
@@ -30,10 +32,11 @@ var libraryNameCache = make(map[int]*PlexLibrary)
 
 func New(p PlexClientCreate) *PlexClient {
 	return &PlexClient{
-		Host:  p.Host,
-		Token: p.Token,
-		Port:  p.Port,
-		URL:   fmt.Sprintf("http://%s:%s", p.Host, p.Port),
+		Host:            p.Host,
+		Token:           p.Token,
+		Port:            p.Port,
+		URL:             fmt.Sprintf("http://%s:%s", p.Host, p.Port),
+		WebhooksEnabled: p.WebhooksEnabled,
 	}
 }
 
