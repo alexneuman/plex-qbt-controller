@@ -1,6 +1,7 @@
 package plex
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -13,6 +14,7 @@ type PlexClientCreate struct {
 	Host            string
 	Port            string
 	WebhooksEnabled bool
+	AllowInsecure   bool
 }
 
 type PlexClient struct {
@@ -21,6 +23,7 @@ type PlexClient struct {
 	Port            string
 	URL             string
 	WebhooksEnabled bool
+	AllowInsecure   bool
 }
 
 type PlexRequest struct {
@@ -35,8 +38,9 @@ func New(p PlexClientCreate) *PlexClient {
 		Host:            p.Host,
 		Token:           p.Token,
 		Port:            p.Port,
-		URL:             fmt.Sprintf("http://%s:%s", p.Host, p.Port),
+		URL:             fmt.Sprintf("https://%s:%s", p.Host, p.Port),
 		WebhooksEnabled: p.WebhooksEnabled,
+		AllowInsecure:   p.AllowInsecure,
 	}
 }
 
@@ -47,7 +51,15 @@ func (p *PlexClient) Fetch(r PlexRequest) (*http.Response, error) {
 		return nil, err
 	}
 	req.Header.Add("Accept", "application/json")
-	client := &http.Client{}
+	var tr *http.Transport
+	if p.AllowInsecure {
+		tr = &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, err
