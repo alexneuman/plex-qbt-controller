@@ -35,6 +35,8 @@ func (a *App) Run() {
 	}
 	// if webhooks, use API, else, use polling
 	if a.Plex.WebhooksEnabled {
+		time.Sleep(time.Second * 10)
+		a.Wait.Done()
 
 	} else {
 		a.Wait.Add(1)

@@ -20,9 +20,10 @@ func main() {
 		PlexLibrariesToPause: []string{"All Movies"},
 	}
 	plexParams := plex.PlexClientCreate{
-		Host:  "localhost",
-		Token: "swfkQ5sXuS-w-meqHksV",
-		Port:  "32400",
+		Host:            "localhost",
+		Token:           "swfkQ5sXuS-w-meqHksV",
+		Port:            "32400",
+		WebhooksEnabled: true,
 	}
 	plex := plex.New(plexParams)
 	_, err := plex.GetLibrarySectionById(1)
@@ -52,7 +53,7 @@ func main() {
 	// qbc.ResumeTorrents(torrents...)
 	// fmt.Println("bob")
 	// plex.GetAllLibraries()
-	app.Run()
+	go app.Run()
 	// time.Sleep(time.Second * 10)
 	// appQuit <- true
 	signal.Notify(app.Quit, syscall.SIGINT, syscall.SIGTERM)
