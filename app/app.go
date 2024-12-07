@@ -56,7 +56,7 @@ func (a *App) runPolling() {
 			fmt.Println("Quit signal received... ")
 			a.Wait.Done()
 			return
-		case <-time.After(time.Second * 1):
+		case <-time.After(time.Second * 10):
 			fmt.Println("Polling...")
 			plexStreams, err := a.Plex.GetLibrariesBeingStreamed()
 			if err != nil {

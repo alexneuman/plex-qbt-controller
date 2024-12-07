@@ -16,14 +16,16 @@ func main() {
 	qbp := qbittorrent.NewBittorrentCreateParams{
 		Username:             "admin",
 		Password:             "admin123",
-		Host:                 "localhost",
-		PlexLibrariesToPause: []string{"All Movies"},
+		Port:                 "8080",
+		Host:                 "10.0.0.224",
+		PlexLibrariesToPause: []string{"All Movies", "All RUBY - Movies"},
 	}
 	plexParams := plex.PlexClientCreate{
-		Host:            "localhost",
-		Token:           "swfkQ5sXuS-w-meqHksV",
+		Host:            "10.0.0.224",
+		Token:           "GWGVWYyw-8zJQij5Ms_f",
 		Port:            "32400",
-		WebhooksEnabled: true,
+		WebhooksEnabled: false,
+		AllowInsecure:   true,
 	}
 	plex := plex.New(plexParams)
 	_, err := plex.GetLibrarySectionById(1)
