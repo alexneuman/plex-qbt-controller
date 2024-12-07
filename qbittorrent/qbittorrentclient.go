@@ -13,6 +13,7 @@ import (
 type NewBittorrentCreateParams struct {
 	Username             string
 	Password             string
+	Port                 string
 	Host                 string
 	PlexLibrariesToPause []string
 }
@@ -61,12 +62,10 @@ func (q *QBittorrentClientRequestParams) New() (*http.Response, error) {
 
 func New(p NewBittorrentCreateParams) (*QBittorrentClient, error) {
 	// url := "http://localhost:8080/api/v2/auth/login"
-	host := "localhost"
-	port := "8080"
 	// username := "admin"
 	// password := "admin123"
-	url := fmt.Sprintf("http://%s:%s/api/v2", host, port)
-	bodyStr := []byte(fmt.Sprintf("username=%s&password=%s", host, port))
+	url := fmt.Sprintf("http://%s:%s/api/v2", p.Host, p.Port)
+	bodyStr := []byte(fmt.Sprintf("username=%s&password=%s", p.Host, p.Port))
 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/auth/login", url), bytes.NewBuffer(bodyStr))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	if err != nil {
@@ -85,7 +84,7 @@ func New(p NewBittorrentCreateParams) (*QBittorrentClient, error) {
 		Username: p.Username,
 		Password: p.Password,
 		Host:     p.Host,
-		Port:     port,
+		Port:     p.Port,
 		// Cookie:   cookieStr,
 		Cookies:              cookies,
 		url:                  url,
@@ -230,7 +229,7 @@ func (q *QBittorrentClient) PauseTorrents(t ...*Torrent) {
 		hashes = append(hashes, tor.InfohashV1)
 	}
 	hashesStr := strings.Join(hashes, "|")
-	r.Payload = fmt.Sprintf("hashes=%s", hashesStr)
+	r.Querystring = fmt.Sprintf("hashes=%s", hashesStr)
 	r.method = "POST"
 	r.endpoint = "/torrents/pause"
 
